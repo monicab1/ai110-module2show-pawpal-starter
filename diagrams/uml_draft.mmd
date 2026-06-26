@@ -1,0 +1,35 @@
+classDiagram
+    class Owner {
+        +str name
+        +list pets
+        +add_pet(pet: Pet)
+        +get_pet(name: str) Pet
+    }
+
+    class Pet {
+        +str name
+        +str breed
+        +list tasks
+        +add_task(task: Task)
+        +edit_task(index: int, task: Task)
+    }
+
+    class Task {
+        +str description
+        +str time_str
+        +int duration
+        +str frequency
+        +date due_date
+        +bool is_complete
+        +mark_complete()
+    }
+
+    class Scheduler {
+        +generate_daily_plan(pet: Pet, target_date: date) tuple
+        +detect_overlaps(tasks: list) list
+    }
+
+    Owner "1" --> "many" Pet : manages
+    Pet "1" --> "many" Task : holds
+    Scheduler ..> Pet : reads from
+    Scheduler ..> Task : processes
