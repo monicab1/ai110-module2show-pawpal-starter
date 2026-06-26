@@ -43,6 +43,38 @@ Together, these three actions naturally flow into one another and ensure that ev
 - Briefly describe your initial UML design.
 - What classes did you include, and what responsibilities did you assign to each?
 
+Here's a write-up for section 1a that you can use directly:
+
+---
+
+## 1a. Initial Design
+
+PawPal+ is built around four classes, each with a distinct responsibility that maps directly to one stage of the pet care pipeline.
+
+---
+
+**Owner**
+The Owner class is the entry point of the system. It stores the owner's name and maintains a list of all their pets. Its responsibility is simply to hold and provide access to Pet objects. Nothing else in the system runs until an Owner exists with at least one Pet attached.
+
+---
+
+**Pet**
+The Pet class is a container for a single animal's profile and care tasks. It stores the pet's name and breed, and it maintains the list of Task objects that belong to that pet. It is responsible for accepting new tasks and allowing existing tasks to be edited. Pet acts as the bridge between the Owner above it and the Tasks below it.
+
+---
+
+**Task**
+The Task class represents a single care activity such as a morning walk, feeding, or medication. It stores everything needed to describe and schedule that activity — what it is, when it starts, how long it takes, how often it repeats, and whether it has been completed. Its one behavior is `mark_complete()`, which automatically advances the due date forward by the correct number of days based on frequency, so the task reappears on its own without the user having to re-enter it.
+
+---
+
+**Scheduler**
+The Scheduler is the brain of the system. Unlike the other three classes it holds no data of its own — it is pure logic. It takes a Pet and a target date, filters that pet's tasks down to only those due on that date, sorts them by scheduled time, checks for conflicts where one task's duration would overlap another task's start time, and returns a formatted daily plan along with any warnings. Every other class exists to feed the Scheduler clean, well-structured data so it can do this job correctly.
+
+---
+
+This four-class design was chosen because it forms a natural pipeline: Owner → Pet → Task → Scheduler. Each class has one clear responsibility and the system flows in one direction, which keeps the logic easy to follow and easy to test.
+
 **b. Design changes**
 
 - Did your design change during implementation?
