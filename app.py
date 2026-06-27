@@ -1,6 +1,10 @@
 import streamlit as st
 from pawpal_system import Owner, Pet, Task, Scheduler
 
+# ── Step 2: Manage Application Memory ─────────────────────────────────────
+if "owner" not in st.session_state:
+    st.session_state.owner = Owner(name="")
+
 
 st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
 
