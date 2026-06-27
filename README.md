@@ -42,7 +42,52 @@ pip install -r requirements.txt
 6. Connect your logic to the Streamlit UI in `app.py`.
 7. Refine UML so it matches what you actually built.
 
-## 🖥️ Sample Output
+## 🖥️ Sample Output - CLI
+```python
+==================================================
+  🐾  PawPal — Today's Schedule  (2026-06-27)
+  Owner: Alex Johnson
+==================================================
+
+  [DOG] Buddy
+  ----------------------------------------
+    #1  07:00 — Morning walk (30 min)
+    #2  07:45 — Breakfast / medication (10 min)
+    #3  18:00 — Evening walk (45 min)
+
+  [CAT] Whiskers
+  ----------------------------------------
+    #1  07:20 — Brush fur (15 min)
+    #2  09:00 — Playtime (20 min)
+    #3  17:30 — Evening feeding (10 min)
+
+==================================================
+  🐾  Full Schedule — All Pets Combined
+==================================================
+    #1  07:00 — [Buddy] Morning walk (30 min)
+    #2  07:20 — [Whiskers] Brush fur (15 min)
+    #3  07:45 — [Buddy] Breakfast / medication (10 min)
+    #4  09:00 — [Whiskers] Playtime (20 min)
+    #5  17:30 — [Whiskers] Evening feeding (10 min)
+    #6  18:00 — [Buddy] Evening walk (45 min)
+
+    ⚠️  [CROSS-PET OVERLAP] Buddy's 'Morning walk' overlaps with Whiskers's 'Brush fur'.
+
+==================================================
+  ✅  Verification Checks
+==================================================
+
+  [1] Pets represented in full plan: Whiskers, Buddy
+      → Spans multiple pets: PASS
+
+  [2] Task times in order: 07:00, 07:20, 07:45, 09:00, 17:30, 18:00
+      → Correctly sorted:   PASS
+
+  [3] Cross-pet overlaps detected: 1
+      → Overlap detection:  PASS
+
+==================================================
+```
 
 Paste a sample of your app's CLI or Streamlit output here so a reader can see what a generated plan looks like:
 
@@ -53,6 +98,10 @@ Paste a sample of your app's CLI or Streamlit output here so a reader can see wh
 #   09:00 — Feeding (10 min) [priority: high]
 #   ...
 ```
+
+## 🖥️ Sample Output - Streamlit
+
+
 
 ## 🧪 Testing PawPal+
 
