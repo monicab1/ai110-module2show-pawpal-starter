@@ -16,7 +16,7 @@ class Task:
             self.due_date = self.due_date + timedelta(days=1)
         elif self.frequency.lower() == "weekly":
             self.due_date = self.due_date + timedelta(days=7)
-        self.is_complete = False
+        self.is_complete = True
 
 
 @dataclass
@@ -61,6 +61,42 @@ class Scheduler:
                     f"({task.duration} min)")
             plan_output.append(line)
         return plan_output, warnings
+
+    @staticmethod
+    def generate_full_plan(owner, target_date: date):
+        """Aggregate and sort all tasks across every pet the owner has."""
+        all_tasks = []
+        for pet in owner.pets:
+            for task in pet.tasks:
+                if task.due_date == target_date:
+                    all_tasks.append((pet, task))
+
+        # Sort all tasks across all pets by time
+        all_tasks.sort(key=lambda pt: pt[1].time_str)
+
+        # Detect cross-pet overlaps
+        cross_warnings = []
+        for i in range(1, len(all_tasks)):
+            prev_pet, prev_task = all_tasks[i - 1]
+            curr_pet, curr_task = all_tasks[i]
+            ph, pm = map(int, prev_task.time_str.split(":"))
+            ch, cm = map(int, curr_task.time_str.split(":"))
+            prev_end = ph * 60 + pm + prev_task.duration
+            curr_start = ch * 60 + cm
+            if prev_end > curr_start and prev_pet != curr_pet:
+                cross_warnings.append(
+                    f"[CROSS-PET OVERLAP] {prev_pet.name}'s "
+                    f"'{prev_task.description}' overlaps with "
+                    f"{curr_pet.name}'s '{curr_task.description}'."
+                )
+
+        plan_output = []
+        for i, (pet, task) in enumerate(all_tasks, start=1):
+            line = (f"#{i}  {task.time_str} — [{pet.name}] {task.description} "
+                    f"({task.duration} min)")
+            plan_output.append(line)
+
+        return plan_output, cross_warnings
 
     @staticmethod
     def detect_overlaps(tasks: list) -> list:
