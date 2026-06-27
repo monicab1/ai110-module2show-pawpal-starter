@@ -32,7 +32,7 @@ col1, col2 = st.columns(2)
 with col1:
     pet_name = st.text_input("Pet name")
 with col2:
-    species = st.selectbox("Species", ["Dog", "Cat", "Fish", "Bird", "Rabbit", "Hamster", "Turtle", "Snake", "Other"])
+    species = st.selectbox("Species", ["Dog", "Cat", "Fish", "Bird", "Rabbit", "Hamster", "Turtle", "Other"])
 
 if st.button("Add Pet"):
     if pet_name.strip() == "":
@@ -89,7 +89,32 @@ else:
 
 st.divider()
 
-# ── Section 4: View Schedule ───────────────────────────────────────────────
+# ── Section 4: Mark a Task Complete ───────────────────────────────────────
+st.subheader("✅ Mark a Task Complete")
+
+if not st.session_state.owner.pets:
+    st.info("Add a pet and some tasks first.")
+else:
+    pet_options = [p.name for p in st.session_state.owner.pets]
+    complete_pet_name = st.selectbox("Select pet", pet_options, key="complete_pet")
+    target_pet = st.session_state.owner.get_pet(complete_pet_name)
+
+    if not target_pet.tasks:
+        st.caption("No tasks found for this pet.")
+    else:
+        task_options = [
+            f"{t.time_str} — {t.description} ({'✅ done' if t.is_complete else 'pending'})"
+            for t in target_pet.tasks
+        ]
+        selected_task_index = st.selectbox("Select task", range(len(task_options)),
+                                           format_func=lambda i: task_options[i],
+                                           key="complete_task")
+
+        if st.button("Mark Complete"):
+            target_pet.tasks[selected_task_index].mark_complete()
+            st.success("Task marked complete!")
+
+
 st.subheader("📅 Today's Schedule")
 
 if not st.session_state.owner.pets:
