@@ -79,6 +79,44 @@ This four-class design was chosen because it forms a natural pipeline: Owner →
 
 - Did your design change during implementation?
 - If yes, describe at least one change and why you made it.
+1. Rename breed to species in Pet
+
+Reflects that the dropdown will offer Dog, Cat, Bird, Fish, Other.
+
+Label it "Pet Type" in the Streamlit UI.
+
+2. Revert edit_task() to delete only
+pythondef edit_task(self, index: int) -> None:
+    if 0 <= index < len(self.tasks):
+        del self.tasks[index]
+
+3. Remove priority entirely
+
+It is a stretch feature. Removed from Task attributes and removed as a sort key in Scheduler.
+
+4. Remove priority_rank() from Task
+
+No priority means no need for this method. Safe to remove.
+
+5. Remove filter_by_time_budget() from Scheduler
+
+No time budget constraint means this method has no job. Safe to remove.
+
+6. Remove available_minutes parameter from generate_daily_plan()
+
+Was tied to the time budget feature. Safe to remove.
+
+7. Remove get_tasks_for_date() from Pet
+
+Date filtering belongs to Scheduler only. Keeps Pet as a pure data container.
+
+8. Dropdowns handle all input validation
+
+Eliminates the need for .strip().lower() defensive coding and any fallback handling for unexpected values.
+
+9. mark_complete() filled in (not a stub)
+
+This one had to be real from the start since the whole recurring task system depends on it.
 
 ---
 
