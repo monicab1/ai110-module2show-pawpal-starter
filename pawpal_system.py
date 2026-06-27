@@ -4,6 +4,8 @@ from datetime import date, timedelta
 
 @dataclass
 class Task:
+    """Represents a single care task assigned to a pet."""
+
     description: str
     time_str: str
     duration: int
@@ -12,6 +14,7 @@ class Task:
     is_complete: bool = False
 
     def mark_complete(self) -> None:
+        """Mark the task complete and advance its due date based on frequency."""
         if self.frequency.lower() == "daily":
             self.due_date = self.due_date + timedelta(days=1)
         elif self.frequency.lower() == "weekly":
@@ -21,27 +24,35 @@ class Task:
 
 @dataclass
 class Pet:
+    """Represents a pet belonging to an owner, with a list of care tasks."""
+
     name: str
     species: str
     tasks: list = field(default_factory=list)
 
     def add_task(self, task: Task) -> None:
+        """Add a new task to this pet's task list."""
         self.tasks.append(task)
 
     def edit_task(self, index: int) -> None:
+        """Remove a task from this pet's task list by index."""
         if 0 <= index < len(self.tasks):
             del self.tasks[index]
 
 
 @dataclass
 class Owner:
+    """Represents a pet owner who manages one or more pets."""
+
     name: str
     pets: list = field(default_factory=list)
 
     def add_pet(self, pet: Pet) -> None:
+        """Add a pet to this owner's pet list."""
         self.pets.append(pet)
 
     def get_pet(self, name: str):
+        """Return a pet by name (case-insensitive), or None if not found."""
         for pet in self.pets:
             if pet.name.lower() == name.lower():
                 return pet
@@ -49,9 +60,11 @@ class Owner:
 
 
 class Scheduler:
+    """Provides scheduling and conflict-detection logic across pets and tasks."""
 
     @staticmethod
     def generate_daily_plan(pet: Pet, target_date: date):
+        """Return a sorted task list and overlap warnings for a single pet on a given date."""
         todays_tasks = [t for t in pet.tasks if t.due_date == target_date]
         todays_tasks.sort(key=lambda t: t.time_str)
         warnings = Scheduler.detect_overlaps(todays_tasks)
@@ -100,6 +113,7 @@ class Scheduler:
 
     @staticmethod
     def detect_overlaps(tasks: list) -> list:
+        """Detect and return a list of time overlap warnings within a single pet's task list."""
         warnings = []
         for i in range(1, len(tasks)):
             prev = tasks[i - 1]
