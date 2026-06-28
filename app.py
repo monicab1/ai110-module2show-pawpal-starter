@@ -8,6 +8,9 @@ st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
 if "owner" not in st.session_state:
     st.session_state.owner = Owner(name="")
 
+if "show_schedule" not in st.session_state:
+    st.session_state.show_schedule = False
+
 # ── Header ─────────────────────────────────────────────────────────────────
 st.title("🐾 PawPal+")
 st.caption("Your pet care planning assistant.")
@@ -44,7 +47,6 @@ if st.button("Add Pet"):
         st.session_state.owner.add_pet(new_pet)
         st.success(f"{pet_name} the {species} added!")
 
-# Show current pets
 if st.session_state.owner.pets:
     st.markdown("**Your pets:**")
     for pet in st.session_state.owner.pets:
@@ -89,32 +91,7 @@ else:
 
 st.divider()
 
-# ── Section 4: Mark a Task Complete ───────────────────────────────────────
-st.subheader("✅ Mark a Task Complete")
-
-if not st.session_state.owner.pets:
-    st.info("Add a pet and some tasks first.")
-else:
-    pet_options = [p.name for p in st.session_state.owner.pets]
-    complete_pet_name = st.selectbox("Select pet", pet_options, key="complete_pet")
-    target_pet = st.session_state.owner.get_pet(complete_pet_name)
-
-    if not target_pet.tasks:
-        st.caption("No tasks found for this pet.")
-    else:
-        task_options = [
-            f"{t.time_str} — {t.description} ({'✅ done' if t.is_complete else 'pending'})"
-            for t in target_pet.tasks
-        ]
-        selected_task_index = st.selectbox("Select task", range(len(task_options)),
-                                           format_func=lambda i: task_options[i],
-                                           key="complete_task")
-
-        if st.button("Mark Complete"):
-            target_pet.tasks[selected_task_index].mark_complete()
-            st.success("Task marked complete!")
-
-
+# ── Section 4: Today's Schedule ───────────────────────────────────────────
 st.subheader("📅 Today's Schedule")
 
 if not st.session_state.owner.pets:
@@ -127,31 +104,71 @@ else:
     )
 
     if st.button("Generate Schedule"):
+        st.session_state.show_schedule = True
+
+    if st.session_state.show_schedule:
         today = date.today()
 
         if view_mode == "By pet":
             for pet in st.session_state.owner.pets:
                 st.markdown(f"**{pet.name} ({pet.species})**")
-                plan, warnings = Scheduler.generate_daily_plan(pet, today)
-                if plan:
-                    for line in plan:
-                        st.markdown(f"- {line}")
+                todays_tasks = [
+                    (i, t) for i, t in enumerate(pet.tasks)
+                    if t.due_date == today
+                ]
+                todays_tasks.sort(key=lambda x: x[1].time_str)
+
+                if todays_tasks:
+                    for i, task in todays_tasks:
+                        col1, col2 = st.columns([7, 2])
+                        with col1:
+                            marker = "✅" if task.is_complete else "⬜"
+                            st.markdown(f"{marker}  {task.time_str} — {task.description} ({task.duration} min)")
+                        with col2:
+                            if task.is_complete:
+                                if st.button("↩️ Undo", key=f"undo_{pet.name}_{i}"):
+                                    task.is_complete = False
+                                    st.rerun()
+                            else:
+                                if st.button("✅ Mark Done", key=f"done_{pet.name}_{i}"):
+                                    task.mark_complete()
+                                    st.rerun()
                 else:
                     st.caption("No tasks scheduled for today.")
+
+                _, warnings = Scheduler.generate_daily_plan(pet, today)
                 if warnings:
                     for w in warnings:
                         st.warning(w)
                 st.markdown("---")
 
         else:
-            plan, cross_warnings = Scheduler.generate_full_plan(
-                st.session_state.owner, today
-            )
-            if plan:
-                for line in plan:
-                    st.markdown(f"- {line}")
+            all_tasks = []
+            for pet in st.session_state.owner.pets:
+                for i, task in enumerate(pet.tasks):
+                    if task.due_date == today:
+                        all_tasks.append((pet, i, task))
+            all_tasks.sort(key=lambda x: x[2].time_str)
+
+            if all_tasks:
+                for pet, i, task in all_tasks:
+                    col1, col2 = st.columns([7, 2])
+                    with col1:
+                        marker = "✅" if task.is_complete else "⬜"
+                        st.markdown(f"{marker}  {task.time_str} — [{pet.name}] {task.description} ({task.duration} min)")
+                    with col2:
+                        if task.is_complete:
+                            if st.button("↩️ Undo", key=f"undo_full_{pet.name}_{i}"):
+                                task.is_complete = False
+                                st.rerun()
+                        else:
+                            if st.button("✅ Mark Done", key=f"done_full_{pet.name}_{i}"):
+                                task.mark_complete()
+                                st.rerun()
             else:
                 st.caption("No tasks scheduled for today across any pets.")
+
+            _, cross_warnings = Scheduler.generate_full_plan(st.session_state.owner, today)
             if cross_warnings:
                 for w in cross_warnings:
                     st.warning(w)
