@@ -128,7 +128,7 @@ print("  🔍  Filter Demo")
 print("=" * 50)
 
 # Mark one task complete for demo purposes
-buddy.tasks[0].mark_complete()
+buddy.tasks[0].mark_task_complete()
 
 # Gather all of today's tasks across both pets
 all_todays_tasks = []
