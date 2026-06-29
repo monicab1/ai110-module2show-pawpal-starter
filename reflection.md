@@ -196,13 +196,32 @@ Rather than simply allow the AI to create duplicate code, I went back and verifi
 
 **a. What you tested**
 
-- What behaviors did you test?
-- Why were these tests important?
+### What behaviors did you test?
+I tested the core behaviors of the PawPal scheduler system, including:
+- Adding tasks to a pet
+- Marking tasks as complete and checking recurrence behavior
+- Sorting tasks in chronological order
+- Detecting overlapping tasks and generating warnings
+
+### Why were these tests important?
+These tests are important because they verify the main features of the system:
+- Task management (adding and updating tasks)
+- Scheduling accuracy (correct time ordering)
+- Conflict detection (preventing overlapping tasks from going unnoticed)
+- Recurring task behavior (ensuring daily tasks carry forward correctly)
 
 **b. Confidence**
 
-- How confident are you that your scheduler works correctly?
-- What edge cases would you test next if you had more time?
+### How confident are you that your scheduler works correctly?
+I am fairly confident that the scheduler works correctly for normal use cases, including task creation, sorting, recurrence, and basic conflict detection.
+
+### What edge cases would you test next if you had more time?
+If I had more time, I would test:
+- Pets with no tasks
+- Tasks that span midnight or cross day boundaries
+- Multiple overlapping tasks across more than two pets
+- Very large numbers of tasks to test performance
+- Invalid input values (e.g., negative duration or incorrect time formats)
 
 ---
 
