@@ -221,17 +221,40 @@ else:
         horizontal=True,
     )
 
-    if st.button("Generate Schedule"):
-        st.session_state.show_schedule = True
+    # ── Generate button + completion status on same row ──────────────────
+    gen_col, status_col = st.columns([2, 3])
+    with gen_col:
+        if st.button("Generate Schedule"):
+            st.session_state.show_schedule = True
+    with status_col:
+        if view_mode == "All pets combined":
+            status_filter = st.selectbox(
+                "Completion status",
+                ["All", "Not Completed", "Completed"],
+                key="status_filter",
+                label_visibility="collapsed" if False else "visible"
+            )
+        else:
+            status_filter = "All"
 
     if st.session_state.show_schedule:
         today = date.today()
 
         if view_mode == "By pet":
-            for pet in st.session_state.owner.pets:
+            # ── Pet filter dropdown ────────────────────────────────────────
+            pet_filter = st.selectbox(
+                "Show pet",
+                ["All pets"] + [p.name for p in st.session_state.owner.pets],
+                key="pet_filter"
+            )
+            pets_to_show = (
+                st.session_state.owner.pets if pet_filter == "All pets"
+                else [st.session_state.owner.get_pet(pet_filter)]
+            )
+
+            for pet in pets_to_show:
                 st.markdown(f"**{pet.name} ({pet.species})**")
 
-                # Show tasks due today OR completed tasks whose slot was today
                 todays_tasks = []
                 for i, t in enumerate(pet.tasks):
                     is_today = t.due_date == today
@@ -282,6 +305,12 @@ else:
 
             all_tasks.sort(key=lambda x: x[2].time_str)
 
+            # Apply completion filter
+            status_map = {"Completed": True, "Not Completed": False}
+            if status_filter != "All":
+                want_complete = status_map[status_filter]
+                all_tasks = [(p, i, t) for p, i, t in all_tasks if t.is_complete == want_complete]
+
             if all_tasks:
                 for pet, i, task in all_tasks:
                     col1, col2 = st.columns([7, 2])
@@ -298,7 +327,7 @@ else:
                                 task.mark_complete()
                                 st.rerun()
             else:
-                st.caption("No tasks scheduled for today across any pets.")
+                st.caption("No tasks match this filter.")
 
             _, cross_warnings = Scheduler.generate_full_plan(st.session_state.owner, today)
             if cross_warnings:

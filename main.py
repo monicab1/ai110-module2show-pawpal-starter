@@ -121,3 +121,44 @@ print(f"\n  [3] Cross-pet overlaps detected: {len(cross_warnings)}")
 print(f"      → Overlap detection:  {'PASS' if cross_warnings else 'FAIL (no overlaps found)'}")
 
 print("\n" + "=" * 50)
+
+# ── Section 4: Filter Demo ─────────────────────────────────────────────────
+print("\n" + "=" * 50)
+print("  🔍  Filter Demo")
+print("=" * 50)
+
+# Mark one task complete for demo purposes
+buddy.tasks[0].mark_complete()
+
+# Gather all of today's tasks across both pets
+all_todays_tasks = []
+for pet in owner.pets:
+    for task in pet.tasks:
+        if task.due_date == today or (
+            task.is_complete and (
+                task.due_date - __import__('datetime').timedelta(days=1) == today or
+                task.due_date - __import__('datetime').timedelta(days=7) == today
+            )
+        ):
+            all_todays_tasks.append(task)
+
+# Filter: incomplete only
+incomplete = Scheduler.filter_tasks(all_todays_tasks, status="incomplete")
+print(f"\n  Incomplete tasks ({len(incomplete)}):")
+for t in incomplete:
+    print(f"    ⬜  {t.time_str} — {t.description}")
+
+# Filter: complete only
+complete = Scheduler.filter_tasks(all_todays_tasks, status="complete")
+print(f"\n  Completed tasks ({len(complete)}):")
+for t in complete:
+    print(f"    ✅  {t.time_str} — {t.description}")
+
+# Filter: all
+all_tasks = Scheduler.filter_tasks(all_todays_tasks)
+print(f"\n  All tasks ({len(all_tasks)}):")
+for t in all_tasks:
+    marker = "✅" if t.is_complete else "⬜"
+    print(f"    {marker}  {t.time_str} — {t.description}")
+
+print("\n" + "=" * 50)
