@@ -12,6 +12,10 @@ class Task:
     frequency: str
     due_date: date
     is_complete: bool = False
+    _original_due_date: date = field(default=None, init=False, repr=False)
+
+    def __post_init__(self):
+        self._original_due_date = self.due_date
 
     def mark_complete(self) -> None:
         """Mark the task complete and advance its due date based on frequency."""
@@ -20,6 +24,11 @@ class Task:
         elif self.frequency.lower() == "weekly":
             self.due_date = self.due_date + timedelta(days=7)
         self.is_complete = True
+
+    def undo_complete(self, today: date) -> None:
+        """Reverse mark_complete: restore is_complete and due date."""
+        self.is_complete = False
+        self.due_date = today
 
 
 @dataclass
@@ -30,11 +39,11 @@ class Pet:
     species: str
     tasks: list = field(default_factory=list)
 
-    def add_task(self, task: Task) -> None:
+    def add_task(self, task: "Task") -> None:
         """Add a new task to this pet's task list."""
         self.tasks.append(task)
 
-    def edit_task(self, index: int) -> None:
+    def remove_task(self, index: int) -> None:
         """Remove a task from this pet's task list by index."""
         if 0 <= index < len(self.tasks):
             del self.tasks[index]
@@ -65,12 +74,27 @@ class Scheduler:
     @staticmethod
     def generate_daily_plan(pet: Pet, target_date: date):
         """Return a sorted task list and overlap warnings for a single pet on a given date."""
-        todays_tasks = [t for t in pet.tasks if t.due_date == target_date]
+        todays_tasks = [
+            t for t in pet.tasks
+            if t.is_complete or t.due_date == target_date
+        ]
+        todays_tasks = [
+            t for t in pet.tasks
+            if t.due_date == target_date or t.is_complete
+        ]
+        # Only show tasks that belong to today (either still due today or completed today)
+        todays_tasks = [
+            t for t in pet.tasks
+            if (t.due_date == target_date) or
+               (t.is_complete and (t.due_date - timedelta(days=1) == target_date
+                or t.due_date - timedelta(days=7) == target_date))
+        ]
         todays_tasks.sort(key=lambda t: t.time_str)
         warnings = Scheduler.detect_overlaps(todays_tasks)
         plan_output = []
         for i, task in enumerate(todays_tasks, start=1):
-            line = (f"#{i}  {task.time_str} — {task.description} "
+            status = "✅" if task.is_complete else "⬜"
+            line = (f"{status} #{i}  {task.time_str} — {task.description} "
                     f"({task.duration} min)")
             plan_output.append(line)
         return plan_output, warnings
@@ -81,13 +105,17 @@ class Scheduler:
         all_tasks = []
         for pet in owner.pets:
             for task in pet.tasks:
-                if task.due_date == target_date:
+                # Include tasks due today OR completed tasks whose original slot was today
+                is_today = task.due_date == target_date
+                was_today = task.is_complete and (
+                    task.due_date - timedelta(days=1) == target_date or
+                    task.due_date - timedelta(days=7) == target_date
+                )
+                if is_today or was_today:
                     all_tasks.append((pet, task))
 
-        # Sort all tasks across all pets by time
         all_tasks.sort(key=lambda pt: pt[1].time_str)
 
-        # Detect cross-pet overlaps
         cross_warnings = []
         for i in range(1, len(all_tasks)):
             prev_pet, prev_task = all_tasks[i - 1]
@@ -105,11 +133,23 @@ class Scheduler:
 
         plan_output = []
         for i, (pet, task) in enumerate(all_tasks, start=1):
-            line = (f"#{i}  {task.time_str} — [{pet.name}] {task.description} "
+            status = "✅" if task.is_complete else "⬜"
+            line = (f"{status} #{i}  {task.time_str} — [{pet.name}] {task.description} "
                     f"({task.duration} min)")
             plan_output.append(line)
 
         return plan_output, cross_warnings
+
+    @staticmethod
+    def filter_tasks(tasks: list, status: str = None) -> list:
+        """Filter a list of tasks by completion status.
+        status: 'complete', 'incomplete', or None (returns all).
+        """
+        if status == "complete":
+            return [t for t in tasks if t.is_complete]
+        elif status == "incomplete":
+            return [t for t in tasks if not t.is_complete]
+        return tasks
 
     @staticmethod
     def detect_overlaps(tasks: list) -> list:
