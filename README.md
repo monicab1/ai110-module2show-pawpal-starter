@@ -104,10 +104,29 @@ Paste a sample of your app's CLI or Streamlit output here so a reader can see wh
 
 
 ## 🧪 Testing PawPal+
+## Test Coverage Summary
+
+These tests verify the core functionality of the PawPal scheduling system.
+
+They ensure that:
+- Tasks can be added to pets correctly
+- Tasks can be marked complete with proper recurrence behavior
+- Tasks are returned in chronological order
+- The scheduler detects overlapping tasks
+
+The suite also checks that conflict detection returns warnings
+without crashing the program.
+
+Together, the tests validate:
+- Basic task management (add and complete tasks)
+- Scheduling behavior (sorting and recurrence)
+- Conflict detection across tasks
+
+System Reliability **Confidence Level:** ★ ★ ★ ★ ★
 
 ```bash
 # Run the full test suite:
-pytest
+python -m pytest
 
 # Run with coverage:
 pytest --cov
@@ -116,7 +135,15 @@ pytest --cov
 Sample test output:
 
 ```
-# Paste your pytest output here
+#========================================= test session starts =========================================
+platform win32 -- Python 3.13.5, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\Swe4me\Documents\Codepath_PawPal+\ai110-module2show-pawpal-starter
+plugins: anyio-4.14.1
+collected 5 items                                                                                      
+
+tests\test_pawpal.py .....                                                                       [100%]
+
+========================================== 5 passed in 0.08s ==========================================
 ```
 
 ## 📐 Smarter Scheduling
