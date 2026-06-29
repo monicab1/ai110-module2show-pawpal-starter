@@ -227,15 +227,11 @@ else:
         if st.button("Generate Schedule"):
             st.session_state.show_schedule = True
     with status_col:
-        if view_mode == "All pets combined":
-            status_filter = st.selectbox(
-                "Completion status",
-                ["All", "Not Completed", "Completed"],
-                key="status_filter",
-                label_visibility="collapsed" if False else "visible"
-            )
-        else:
-            status_filter = "All"
+        status_filter = st.selectbox(
+            "Completion status",
+            ["All", "Not Completed", "Completed"],
+            key="status_filter"
+        )
 
     if st.session_state.show_schedule:
         today = date.today()
@@ -266,6 +262,11 @@ else:
                         todays_tasks.append((i, t))
 
                 todays_tasks.sort(key=lambda x: x[1].time_str)
+
+                # Apply completion filter
+                if status_filter != "All":
+                    want = status_filter == "Completed"
+                    todays_tasks = [(i, t) for i, t in todays_tasks if t.is_complete == want]
 
                 if todays_tasks:
                     for i, task in todays_tasks:
