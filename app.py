@@ -281,7 +281,7 @@ else:
                                     st.rerun()
                             else:
                                 if st.button("✅ Mark Done", key=f"done_{pet.name}_{i}"):
-                                    task.mark_complete()
+                                    task.mark_task_complete()
                                     st.rerun()
                 else:
                     st.caption("No tasks scheduled for today.")
@@ -325,7 +325,7 @@ else:
                                 st.rerun()
                         else:
                             if st.button("✅ Mark Done", key=f"done_full_{pet.name}_{i}"):
-                                task.mark_complete()
+                                task.mark_task_complete()
                                 st.rerun()
             else:
                 st.caption("No tasks match this filter.")

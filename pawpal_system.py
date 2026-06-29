@@ -17,8 +17,18 @@ class Task:
     def __post_init__(self):
         self._original_due_date = self.due_date
 
-    def mark_complete(self) -> None:
-        """Mark the task complete and advance its due date based on frequency."""
+    def mark_task_complete(self) -> None:
+        """Mark the task complete and automatically schedule the next occurrence.
+
+        This is the recurring task mechanism. Rather than creating a new Task
+        instance (which would cause duplicate entries in the same session),
+        we advance the due date forward using timedelta so the task
+        automatically reappears on the correct next occurrence:
+          - Daily tasks: due_date + 1 day  (timedelta(days=1))
+          - Weekly tasks: due_date + 7 days (timedelta(days=7))
+        The task is marked complete for today and becomes incomplete again
+        on its next due date, satisfying the recurring task requirement.
+        """
         if self.frequency.lower() == "daily":
             self.due_date = self.due_date + timedelta(days=1)
         elif self.frequency.lower() == "weekly":
@@ -26,7 +36,7 @@ class Task:
         self.is_complete = True
 
     def undo_complete(self, today: date) -> None:
-        """Reverse mark_complete: restore is_complete and due date."""
+        """Reverse mark_task_complete: restore is_complete and due date."""
         self.is_complete = False
         self.due_date = today
 
